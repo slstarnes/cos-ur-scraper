@@ -1,16 +1,30 @@
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, element
 from bs4 import SoupStrainer
-req  = requests.get('http://consequenceofsound.net/upcoming-releases/')
+
+req = requests.get('http://consequenceofsound.net/upcoming-releases/')
 
 soup = BeautifulSoup(req.text, 'html.parser')
 
 sub = SoupStrainer(id='album-thumbnail')
-for sibs in sub.find_next_siblings('album-thumbnail'):
-	print(sibs)
+for sibs in soup.find_next_siblings('album-thumbnail'):
+    print(sibs)
 
-#pretty = soup.prettify().encode('UTF-8')
-m = soup.find(id='main-content')
-#rint(m.prettify())#.encode('UTF-8'))
+# pretty = soup.prettify().encode('UTF-8')
+albums = soup.find(id='main-content')
 
-#<h1 class='post-title'>Upcoming Releases</h1>
+for e in albums:
+    print('-'*10)
+    if e.name == 'div':
+        for child in e.children:
+            print ('NAME:',child.contents)
+            print(child)
+            if isinstance(child, element.NavigableString):
+                print ('YES')
+                print(child.string)
+        #print (type(element))
+    print('-' * 10)
+
+# rint(m.prettify())#.encode('UTF-8'))
+
+# <h1 class='post-title'>Upcoming Releases</h1>
