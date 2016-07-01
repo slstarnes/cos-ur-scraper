@@ -25,12 +25,16 @@ def strip_non_ascii(string):
 def date_cleaner(date):
     return re.sub(r'\({1}.*\){1}','',date).strip()
 
+def str_cleaner(s):
+    return s.replace('[','').replace(']','').replace("'",'')
+
 
 albums = []
 article = soup.find(id="main-content")
 for e1 in article.find_all('section', class_ = 'results-chunk'):
     for e2 in e1.find_all('h2'):
         date = date_cleaner(e2.text)
+        print (date)
         for e3 in e1.find_all('span', class_ = 'title'):
             s = e3.text.replace(u'\u2013','-')
             s = s.replace(u'\xa0',' ')
@@ -41,7 +45,7 @@ for e1 in article.find_all('section', class_ = 'results-chunk'):
                 artist = strip_non_ascii(s[0])
                 album_title = strip_non_ascii(s[1])
             else:
-                artist = strip_non_ascii(str(s))
+                artist = strip_non_ascii(str_cleaner(str(s)))
                 album_title = ""
                 print ("issue with: " + str(s))
             albums.append(Album(date,artist,album_title))
@@ -62,11 +66,11 @@ for i, a in enumerate(albums):
 albums_df = pd.concat([old_albums_df,albums_df])
 albums_df.drop_duplicates(subset = ['Artist','Title'],inplace=True)
 albums_df['Date'] = albums_df['Date'].apply(lambda x:
-                                            dt.datetime.strptime(x,"%B %d, %Y"))
+                                    dt.datetime.strptime(x,"%B %d, %Y"))
 albums_df.sort_values(['Date','Artist','Title'],inplace=True)
 albums_df['Date'] = albums_df['Date'].apply(lambda x:
                                             x.strftime("%B %d, %Y"))
 
-print("Number of rows added: %i"%(prev_size - len(albums_df)))
+print("Number of rows added: %i"%(len(albums_df) - prev_size))
 
 albums_df.to_csv('albums.csv',index=False)
